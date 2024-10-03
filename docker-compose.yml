@@ -1,0 +1,92 @@
+services:
+  api-gateway:
+    image: comauro7511/api-gateway:latest
+    build: 
+      context: ./graphql-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - user-service
+      - order-service
+      - product-service
+    environment:
+      USER_SERVICE_URL: http://user-service:3000
+      ORDER_SERVICE_URL: http://order-service:3000
+      PRODUCT_SERVICE_URL: http://product-service:3000
+    restart: unless-stopped
+
+  user-service:
+    image: comauro7511/users:latest
+    build: 
+      context: ./users
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3000"
+    depends_on:
+      - postgres-users
+    environment:
+      DATABASE_URL: postgres://postgres:password@postgres-users:5432/usersdb
+      # JWT_SECRET: ${JWT_SECRET:-defaultsecret}
+    restart: unless-stopped
+
+  order-service:
+    image: comauro7511/orders:latest
+    build: 
+      context: ./orders
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3000"
+    depends_on:
+      - postgres-orders
+    environment:
+      DATABASE_URL: postgres://postgres:password@postgres-orders:5432/ordersdb
+    restart: unless-stopped
+
+  product-service:
+    image: comauro7511/products:latest
+    build: 
+      context: ./products
+      dockerfile: Dockerfile
+    ports:
+      - "3003:3000"
+    depends_on:
+      - postgres-products
+    environment:
+      DATABASE_URL: postgres://postgres:password@postgres-products:5432/productsdb
+    restart: unless-stopped
+
+  postgres-users:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_DB: usersdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+    volumes:
+      - postgres-users-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  postgres-orders:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_DB: ordersdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+    volumes:
+      - postgres-orders-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  postgres-products:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_DB: productsdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+    volumes:
+      - postgres-products-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres-users-data:
+  postgres-orders-data:
+  postgres-products-data:

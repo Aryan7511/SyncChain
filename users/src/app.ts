@@ -6,7 +6,6 @@ import { getAllUsersRouter } from './routes/getUsers';
 import { getUserByIdRouter } from './routes/getUserById';
 import { getUserTokenRouter } from './routes/getUserToken';
 import morgan from 'morgan';
-import { get } from 'http';
 
 const app = express();
 

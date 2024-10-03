@@ -2,9 +2,9 @@ import axios from 'axios';
 import { GraphQLError } from 'graphql';
 import { getReasonPhrase } from 'http-status-codes';
 
-const USERS_SERVICE_URL = 'http://localhost:3000/api/users';
-const PRODUCTS_SERVICE_URL = 'http://localhost:4000/api/products';
-const ORDERS_SERVICE_URL = 'http://localhost:5000/api/orders';
+const USERS_SERVICE_URL = `${process.env.USER_SERVICE_URL}/api/users`;
+const PRODUCTS_SERVICE_URL = `${process.env.PRODUCT_SERVICE_URL}/api/products`;
+const ORDERS_SERVICE_URL = `${process.env.ORDER_SERVICE_URL}/api/orders`;
 
 // Helper function for GET requests
 export const get = async (url: string) => {
