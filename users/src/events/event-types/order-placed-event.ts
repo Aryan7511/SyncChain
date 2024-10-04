@@ -10,5 +10,6 @@ export interface OrderPlacedEvent {
     totalAmount: number;
     quantity: number;
     status: string;
+    createdAt: string
   };
 }

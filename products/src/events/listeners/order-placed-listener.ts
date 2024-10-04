@@ -4,36 +4,37 @@ import { queueGroupName } from './queue-group-name';
 import { OrderPlacedEvent } from '../event-types/order-placed-event';
 import { Listener } from './base-listener';
 import { Subjects } from '../subjects';
+import { prismaClient } from '../../lib/db';
 
 export class OrderPlacedListener extends Listener<OrderPlacedEvent> {
   readonly subject = Subjects.OrderPlaced;
   queueGroupName = queueGroupName;
 
   async onMessage(data: OrderPlacedEvent['data'], msg: Message) {
-    // // Find the ticket that the order is reserving
-    // const ticket = await Ticket.findById(data.ticket.id);
+    const { productId, quantity } = data;
 
-    // // If no ticket, throw error
-    // if (!ticket) {
-    //   throw new Error('Ticket not found');
-    // }
+    // Fetch the product by ID
+    const product = await prismaClient.product.findUnique({
+      where: { id: productId }
+    });
 
-    // // Mark the ticket as being reserved by setting its orderId property
-    // ticket.set({ orderId: data.id });
+    if (!product) {
+      throw new Error('Product not found');
+    }
 
-    // // Save the ticket
-    // await ticket.save();
+    const newQuantity = product.quantity - quantity;
 
-    // // Publish an event indicating that the ticket has been updated
-    // await new TicketUpdatedPublisher(this.client).publish({
-    //   id: ticket.id,
-    //   price: ticket.price,
-    //   title: ticket.title,
-    //   userId: ticket.userId,
-    //   orderId: ticket.orderId,
-    //   version: ticket.version
-    // });
+    if (newQuantity < 0) {
+      throw new Error("Product quantity can't be neagtive");
+    }
 
+    const updatedProduct = await prismaClient.product.update({
+      where: { id: productId },
+      data: {
+        quantity: newQuantity // Update the quantity
+      }
+    });
+    
     // Acknowledge the message
     msg.ack();
   }

@@ -4,35 +4,35 @@ import { queueGroupName } from './queue-group-name';
 import { ProductCreatedEvent } from '../event-types/product-created-event';
 import { Listener } from './base-listener';
 import { Subjects } from '../subjects';
+import { prismaClient } from '../../lib/db';
 
 export class ProductCreatedListener extends Listener<ProductCreatedEvent> {
   readonly subject = Subjects.ProductCreated;
   queueGroupName = queueGroupName;
 
   async onMessage(data: ProductCreatedEvent['data'], msg: Message) {
-    // // Find the ticket that the order is reserving
-    // const ticket = await Ticket.findById(data.ticket.id);
+    console.log(data);
+    const { name, price, productId, quantity, description } = data;
 
-    // // If no ticket, throw error
-    // if (!ticket) {
-    //   throw new Error('Ticket not found');
-    // }
+    // Check if the product ID already exists
+    const existingProduct = await prismaClient.product.findUnique({
+      where: { id: productId }
+    });
 
-    // // Mark the ticket as being reserved by setting its orderId property
-    // ticket.set({ orderId: data.id });
+    if (existingProduct) {
+      throw new Error('Product with the given productId already exists');
+    }
 
-    // // Save the ticket
-    // await ticket.save();
-
-    // // Publish an event indicating that the ticket has been updated
-    // await new TicketUpdatedPublisher(this.client).publish({
-    //   id: ticket.id,
-    //   price: ticket.price,
-    //   title: ticket.title,
-    //   userId: ticket.userId,
-    //   orderId: ticket.orderId,
-    //   version: ticket.version
-    // });
+    // Create the new product
+    const newProduct = await prismaClient.product.create({
+      data: {
+        id: productId,
+        name,
+        price,
+        quantity,
+        description
+      }
+    });
 
     // Acknowledge the message
     msg.ack();

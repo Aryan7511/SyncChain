@@ -24,3 +24,15 @@ model User {
   role          String?                   
   createdAt     DateTime @default(now()) @map("created_at")               
 }
+
+
+model Order {
+  id      String   @id @map("order_id") 
+  userId       String   @map("user_id")                       
+  productId    String   @map("product_id")                  
+  productName  String   @map("product_name")           
+  totalAmount  Int      @map("total_amount")          
+  quantity     Int               
+  status       String   
+  createdAt    String @map("created_at")                  
+}

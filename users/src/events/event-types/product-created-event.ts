@@ -5,7 +5,7 @@ export interface ProductCreatedEvent {
   data: {
     productId: string;      
     name: string;            
-    description?: string;   
+    description?: string | null;   
     price: number;           
     quantity: number;             
   };

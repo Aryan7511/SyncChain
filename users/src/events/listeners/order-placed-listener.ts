@@ -4,35 +4,40 @@ import { queueGroupName } from './queue-group-name';
 import { OrderPlacedEvent } from '../event-types/order-placed-event';
 import { Listener } from './base-listener';
 import { Subjects } from '../subjects';
+import { prismaClient } from '../../lib/db';
 
 export class OrderPlacedListener extends Listener<OrderPlacedEvent> {
   readonly subject = Subjects.OrderPlaced;
   queueGroupName = queueGroupName;
 
   async onMessage(data: OrderPlacedEvent['data'], msg: Message) {
-    // // Find the ticket that the order is reserving
-    // const ticket = await Ticket.findById(data.ticket.id);
+    console.log(data);
 
-    // // If no ticket, throw error
-    // if (!ticket) {
-    //   throw new Error('Ticket not found');
-    // }
+    // Extracting data from the data
+    const {
+      orderId,
+      productId,
+      createdAt,
+      quantity,
+      status,
+      totalAmount,
+      userId,
+      productName
+    } = data;
 
-    // // Mark the ticket as being reserved by setting its orderId property
-    // ticket.set({ orderId: data.id });
-
-    // // Save the ticket
-    // await ticket.save();
-
-    // // Publish an event indicating that the ticket has been updated
-    // await new TicketUpdatedPublisher(this.client).publish({
-    //   id: ticket.id,
-    //   price: ticket.price,
-    //   title: ticket.title,
-    //   userId: ticket.userId,
-    //   orderId: ticket.orderId,
-    //   version: ticket.version
-    // });
+    // Insert data into the Order table
+    const newOrder = await prismaClient.order.create({
+      data: {
+        id: orderId,
+        userId: userId,
+        productId: productId,
+        productName: productName,
+        totalAmount: totalAmount,
+        quantity: quantity,
+        status: status as any ,
+        createdAt: createdAt
+      }
+    });
 
     // Acknowledge the message
     msg.ack();

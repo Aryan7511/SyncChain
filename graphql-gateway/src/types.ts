@@ -13,7 +13,7 @@ export interface Product {
   id: string;
   name: string;
   price: number;
-  description?: string;
+  description: string;
   quantity: number;
   createdAt: string;
   updatedAt: string;
@@ -43,7 +43,7 @@ export interface RegisterInput {
 export interface ProductInput {
   name: string;
   price: number;
-  description?: string;
+  description: string;
   quantity: number;
 }
 

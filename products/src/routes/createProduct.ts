@@ -2,6 +2,8 @@ import express, { NextFunction, Request, Response } from 'express';
 import { body } from 'express-validator';
 import { prismaClient } from '../lib/db';
 import { validateRequest } from '../middlewares/validate-request';
+import { ProductCreatedPublisher } from '../events/publishers/product-created-publisher';
+import { natsWrapper } from '../nats-wrapper';
 
 const router = express.Router();
 
@@ -37,10 +39,18 @@ router.post(
       const newProduct = await prismaClient.product.create({
         data: {
           name,
-          description: description || undefined,
+          description: description,
           price: Number(price),
           quantity: Number(quantity)
         }
+      });
+
+      await new ProductCreatedPublisher(natsWrapper.client).publish({
+        productId: newProduct.id,
+        name: newProduct.name,
+        price: newProduct.price,
+        quantity: newProduct.quantity,
+        description: newProduct.description as string
       });
 
       res.status(201).json({

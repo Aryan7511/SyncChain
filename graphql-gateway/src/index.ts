@@ -13,8 +13,8 @@ const getUserFromToken = (token: string) => {
   if (!token) return null;
 
   try {
-    const secret = (process.env.JWT_SECRET as string) || 'asdf';
-    const user = jwt.verify(token, 'asdf') as UserPayload;
+    const secret = (process.env.JWT_SECRET as string) || 'asdfasdf';
+    const user = jwt.verify(token, secret) as UserPayload;
     return user;
   } catch (error:any) {
     console.error('JWT verification failed:', error?.message);

@@ -13,7 +13,7 @@ const typeDefs = `
     id: ID!
     name: String!
     price: Int!
-    description: String
+    description: String!
     quantity: Int!
     createdAt: String
     updatedAt: String
@@ -47,7 +47,7 @@ const typeDefs = `
   input ProductInput {
     name: String!
     price: Int!
-    description: String
+    description: String!
     quantity: Int!
   }
 

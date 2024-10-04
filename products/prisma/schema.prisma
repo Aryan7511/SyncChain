@@ -16,7 +16,7 @@ datasource db {
 model Product {
   id          String   @id @default(uuid())
   name        String   @db.VarChar(255)     
-  description String?  @db.Text                     
+  description String   @db.Text                     
   price       Int                   
   quantity    Int                       
   createdAt   DateTime @default(now()) @map("created_at")

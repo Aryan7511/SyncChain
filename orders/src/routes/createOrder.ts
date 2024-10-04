@@ -3,6 +3,8 @@ import { body } from 'express-validator';
 import { prismaClient } from '../lib/db'; // Adjust the import path as necessary
 import { validateRequest } from '../middlewares/validate-request';
 import { BadRequestError } from '../errors/bad-request-error';
+import { OrderPlacedPublisher } from '../events/publishers/order-placed-publisher';
+import { natsWrapper } from '../nats-wrapper';
 
 const router = express.Router();
 
@@ -60,6 +62,17 @@ router.post(
         data: {
           quantity: productExists.quantity - quantity
         }
+      });
+
+      await new OrderPlacedPublisher(natsWrapper.client).publish({
+        orderId: newOrder.id,
+        productId: newOrder.productId,
+        productName: productExists.name,
+        userId: newOrder.userId,
+        quantity: newOrder.quantity,
+        status: newOrder.status,
+        totalAmount: newOrder.totalAmount,
+        createdAt: newOrder.createdAt.toISOString()
       });
 
       res.status(201).json({

@@ -17,40 +17,33 @@ datasource db {
 model Product {
   id          String   @id @default(uuid())
   name        String   @db.VarChar(255)     
-  description String?  @db.Text                     
+  description String  @db.Text                     
   price       Int                   
   quantity    Int                       
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
   orders  Order[]
 }
 
 model User {
   id            String   @id @default(uuid())
-  email         String   @unique                      
-  password      String                                 
+  email         String   @unique                                                    
   firstName     String @map("first_name")                               
   lastName      String @map("last_name")                               
   location      String                               
   contactNumber String  @map("contact_number") 
   role          String?                     
-  createdAt     DateTime @default(now()) @map("created_at") 
   orders  Order[]              
 }
 
-enum OrderStatus {
-  PLACED
-  SHIPPED
-}
 
 model Order {
   id            String   @id @default(uuid())
   userId        String   @map("user_id")
   productId     String   @map("product_id")    
   totalAmount   Int      @map("total_amount")  
-  createdAt     DateTime @default(now()) @map("created_at")
   quantity      Int      
-  status        OrderStatus @default(PLACED)   
+  status        String  
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Relationships
   user          User     @relation(fields: [userId], references: [id]) 

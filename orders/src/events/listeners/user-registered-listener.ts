@@ -4,6 +4,7 @@ import { queueGroupName } from './queue-group-name';
 import { UserRegisteredEvent } from '../event-types/user-registered-event';
 import { Listener } from './base-listener';
 import { Subjects } from '../subjects';
+import { prismaClient } from '../../lib/db';
 
 export class UserRegisteredListener extends Listener<UserRegisteredEvent> {
   readonly subject = Subjects.UserRegistered;
@@ -11,29 +12,26 @@ export class UserRegisteredListener extends Listener<UserRegisteredEvent> {
 
   async onMessage(data: UserRegisteredEvent['data'], msg: Message) {
     console.log(data);
-    // // Find the ticket that the order is reserving
-    // const ticket = await Ticket.findById(data.ticket.id);
+    const { email, userId, firstName, lastName, location, contactNumber } =
+      data;
 
-    // // If no ticket, throw error
-    // if (!ticket) {
-    //   throw new Error('Ticket not found');
-    // }
+    const existingUser = await prismaClient.user.findUnique({
+      where: { id: userId }
+    });
 
-    // // Mark the ticket as being reserved by setting its orderId property
-    // ticket.set({ orderId: data.id });
-
-    // // Save the ticket
-    // await ticket.save();
-
-    // // Publish an event indicating that the ticket has been updated
-    // await new TicketUpdatedPublisher(this.client).publish({
-    //   id: ticket.id,
-    //   price: ticket.price,
-    //   title: ticket.title,
-    //   userId: ticket.userId,
-    //   orderId: ticket.orderId,
-    //   version: ticket.version
-    // });
+    if (existingUser) {
+      throw new Error('User with the given userId already exists.');
+    }
+    const newUser = await prismaClient.user.create({
+      data: {
+        id: userId,
+        email,
+        firstName,
+        lastName,
+        location,
+        contactNumber
+      }
+    });
 
     // Acknowledge the message
     msg.ack();
