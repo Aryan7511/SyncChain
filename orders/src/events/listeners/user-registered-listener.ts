@@ -10,6 +10,7 @@ export class UserRegisteredListener extends Listener<UserRegisteredEvent> {
   queueGroupName = queueGroupName;
 
   async onMessage(data: UserRegisteredEvent['data'], msg: Message) {
+    console.log(data);
     // // Find the ticket that the order is reserving
     // const ticket = await Ticket.findById(data.ticket.id);
 
