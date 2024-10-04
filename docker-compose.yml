@@ -1,6 +1,6 @@
 services:
   api-gateway:
-    image: comauro7511/api-gateway:latest
+    image: comauro7511/api-gateway
     build: 
       context: ./graphql-gateway
       dockerfile: Dockerfile
@@ -17,7 +17,7 @@ services:
     restart: unless-stopped
 
   user-service:
-    image: comauro7511/users:latest
+    image: comauro7511/users
     build: 
       context: ./users
       dockerfile: Dockerfile
@@ -25,13 +25,17 @@ services:
       - "3001:3000"
     depends_on:
       - postgres-users
+      - nats-streaming
     environment:
       DATABASE_URL: postgres://postgres:password@postgres-users:5432/usersdb
-      # JWT_SECRET: ${JWT_SECRET:-defaultsecret}
+      NATS_URL: nats://nats-streaming:4222
+      NATS_CLUSTER_ID: syncchain
+      NATS_CLIENT_ID: user-service
+    # JWT_SECRET: ${JWT_SECRET:-defaultsecret}
     restart: unless-stopped
 
   order-service:
-    image: comauro7511/orders:latest
+    image: comauro7511/orders
     build: 
       context: ./orders
       dockerfile: Dockerfile
@@ -39,12 +43,16 @@ services:
       - "3002:3000"
     depends_on:
       - postgres-orders
+      - nats-streaming
     environment:
       DATABASE_URL: postgres://postgres:password@postgres-orders:5432/ordersdb
+      NATS_URL: nats://nats-streaming:4222
+      NATS_CLUSTER_ID: syncchain
+      NATS_CLIENT_ID: order-service
     restart: unless-stopped
 
   product-service:
-    image: comauro7511/products:latest
+    image: comauro7511/products
     build: 
       context: ./products
       dockerfile: Dockerfile
@@ -52,8 +60,33 @@ services:
       - "3003:3000"
     depends_on:
       - postgres-products
+      - nats-streaming
     environment:
       DATABASE_URL: postgres://postgres:password@postgres-products:5432/productsdb
+      NATS_URL: nats://nats-streaming:4222
+      NATS_CLUSTER_ID: syncchain
+      NATS_CLIENT_ID: product-service
+    restart: unless-stopped
+
+  nats-streaming:
+    image: nats-streaming:0.17.0
+    command:
+      - "-p"
+      - "4222"
+      - "-m"
+      - "8222"
+      - "-hbi"
+      - "5s"
+      - "-hbt"
+      - "5s"
+      - "-hbf"
+      - "2"
+      - "-SD"
+      - "-cid"
+      - "syncchain"
+    ports:
+      - "4222:4222"
+      - "8222:8222"
     restart: unless-stopped
 
   postgres-users:
@@ -89,4 +122,4 @@ services:
 volumes:
   postgres-users-data:
   postgres-orders-data:
-  postgres-products-data:
+  postgres-products-data: 

@@ -5,6 +5,8 @@ import { Password } from '../utils/password';
 import { validateRequest } from '../middlewares/validate-request';
 import { BadRequestError } from '../errors/bad-request-error';
 import jwt from 'jsonwebtoken';
+import { UserRegisteredPublisher } from '../events/publishers/user-registered-publisher';
+import { natsWrapper } from '../nats-wrapper';
 
 const router = express.Router();
 
@@ -81,6 +83,15 @@ router.post(
 
       // Exclude password field from the user object
       const { password: _, ...userWithoutPassword } = newUser;
+
+      await new UserRegisteredPublisher(natsWrapper.client).publish({
+        userId: newUser.id,
+        email: newUser.email,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        contactNumber: newUser.contactNumber,
+        location: newUser.location
+      });
 
       // Respond with success message and the token
       res.status(201).json({

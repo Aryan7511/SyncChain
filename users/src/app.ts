@@ -13,7 +13,7 @@ app.use(morgan('common'));
 app.use(express.json());
 
 app.get('/', (req: Request, res: Response, next: NextFunction) => {
-  res.json({ message: 'users Server is up and running' });
+  res.json({ message: 'Users Service is up and running' });
 });
 
 app.use(createUserRouter);

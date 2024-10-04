@@ -49,7 +49,7 @@ async function init() {
     })
   );
 
-  app.listen(PORT, () => console.log(`Server started at PORT:${PORT}`));
+  app.listen(PORT, () => console.log(`Api Gateway Service is up and running on PORT:${PORT}`));
 }
 
 init();
