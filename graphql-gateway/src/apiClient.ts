@@ -1,16 +1,38 @@
 import axios from 'axios';
 import { GraphQLError } from 'graphql';
 import { getReasonPhrase } from 'http-status-codes';
+import Redis from 'ioredis';
+
+const redis = new Redis({
+  host: process.env.REDIS_HOST || 'redis',
+  port: 6379
+});
 
 const USERS_SERVICE_URL = `${process.env.USER_SERVICE_URL}/api/users`;
 const PRODUCTS_SERVICE_URL = `${process.env.PRODUCT_SERVICE_URL}/api/products`;
 const ORDERS_SERVICE_URL = `${process.env.ORDER_SERVICE_URL}/api/orders`;
 
-// Helper function for GET requests
-export const get = async (url: string) => {
+const CACHE_EXPIRATION = 60; // Cache expiration time in seconds
+
+// Helper function for GET requests with caching
+export const get = async (url: string, useCache = false, cacheKey?: string) => {
+  if (useCache && cacheKey) {
+    const cachedData = await redis.get(cacheKey);
+    if (cachedData) {
+      return JSON.parse(cachedData);
+    }
+  }
+
   try {
     const response = await axios.get(url);
-    return response.data;
+    const data = response.data;
+
+    // Cache the response if caching is enabled
+    if (useCache && cacheKey) {
+      await redis.set(cacheKey, JSON.stringify(data), 'EX', CACHE_EXPIRATION);
+    }
+
+    return data;
   } catch (error) {
     handleAxiosError(error, url);
   }
@@ -56,7 +78,7 @@ export const userService = {
 };
 
 export const productService = {
-  getAllProducts: () => get(PRODUCTS_SERVICE_URL),
+  getAllProducts: () => get(PRODUCTS_SERVICE_URL, true, 'all_products_cache'),
   getProductById: (id: string) => get(`${PRODUCTS_SERVICE_URL}/${id}`),
   createProduct: (input: any) => post(PRODUCTS_SERVICE_URL, input)
 };

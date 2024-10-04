@@ -10,10 +10,12 @@ services:
       - user-service
       - order-service
       - product-service
+      - redis
     environment:
       USER_SERVICE_URL: http://user-service:3000
       ORDER_SERVICE_URL: http://order-service:3000
       PRODUCT_SERVICE_URL: http://product-service:3000
+      REDIS_HOST: redis
     restart: unless-stopped
 
   user-service:
@@ -118,7 +120,13 @@ services:
     volumes:
       - postgres-products-data:/var/lib/postgresql/data
     restart: unless-stopped
-
+  
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+  
 volumes:
   postgres-users-data:
   postgres-orders-data:
